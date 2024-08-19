@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">        
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
@@ -16,13 +16,20 @@
         {% if weather %}
         <div class="weather-info">
             <h2>{{ weather.city }}</h2>
+            <p>Today: {{ weather.day }}, {{ weather.date }}</p>
+            <p>Current Time: {{ weather.time }}</p>
             <p>Temperature: {{ weather.temperature }} °C</p>
             <p>Description: {{ weather.description }}</p>
             <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="Weather icon">
+            {% if weather.next_day_weather %}
+            <h3>Next Day Forecast</h3>
+            <p>Temperature: {{ weather.next_day_weather.temperature }} °C</p>
+            <p>Description: {{ weather.next_day_weather.description }}</p>
+            <img src="http://openweathermap.org/img/wn/{{ weather.next_day_weather.icon }}@2x.png" alt="Weather icon">
+            {% endif %}
         </div>
         {% endif %}
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-
