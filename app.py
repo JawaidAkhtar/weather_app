@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import requests
 from datetime import datetime, timedelta
+import pytz
 
 app = Flask(__name__)
 
@@ -20,20 +21,33 @@ def get_weather_data(city, api_key):
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
     response = requests.get(url)
     data = response.json()
+    
+    # Check if city is found
+    if data['cod'] != 200:
+        return None
+
+    # Retrieve timezone offset from API response
+    timezone_offset = data['timezone']
+    city_timezone = pytz.FixedOffset(timezone_offset / 60)
+
+    # Current time in UTC
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+    # Convert UTC time to city's local time
+    local_time = utc_now.astimezone(city_timezone)
 
     # Next day forecast data
     forecast_url = f'http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
     forecast_response = requests.get(forecast_url)
     forecast_data = forecast_response.json()
 
-    # Get current date and time
-    current_time = datetime.now()
+    # Get next day forecast
+    current_time = local_time
     next_day = current_time + timedelta(days=1)
     next_day_weather = None
 
-    # Find the weather forecast for the next day (24 hours later)
     for forecast in forecast_data['list']:
-        forecast_time = datetime.fromtimestamp(forecast['dt'])
+        forecast_time = datetime.fromtimestamp(forecast['dt'], tz=pytz.utc).astimezone(city_timezone)
         if forecast_time.date() == next_day.date():
             next_day_weather = {
                 'temperature': forecast['main']['temp'],
@@ -42,20 +56,16 @@ def get_weather_data(city, api_key):
             }
             break
 
-    if data['cod'] == 200:
-        return {
-            'city': data['name'],
-            'temperature': data['main']['temp'],
-            'description': data['weather'][0]['description'],
-            'icon': data['weather'][0]['icon'],
-            'day': current_time.strftime('%A'),
-            'date': current_time.strftime('%Y-%m-%d'),
-            'time': current_time.strftime('%H:%M:%S'),
-            'next_day_weather': next_day_weather
-        }
-    else:
-        return None
+    return {
+        'city': data['name'],
+        'temperature': data['main']['temp'],
+        'description': data['weather'][0]['description'],
+        'icon': data['weather'][0]['icon'],
+        'day': current_time.strftime('%A'),
+        'date': current_time.strftime('%Y-%m-%d'),
+        'time': current_time.strftime('%H:%M:%S'),
+        'next_day_weather': next_day_weather
+    }
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
