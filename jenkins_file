@@ -1,0 +1,51 @@
+pipeline {
+    agent {
+        label 'dev'
+    }
+    
+    stages {
+        stage("clone_code") {
+            steps {
+                script {
+                    sh 'git clone -b main https://github.com/JawaidAkhtar/weather_app.git'
+                    echo "Code cloned successfully from GitHub"
+                }
+            }
+        }
+        stage("build") {
+            steps {
+                script {
+                    // Print the current user and directory for debugging
+                    sh 'whoami'
+                    sh 'pwd'
+
+                    // Change directory using dir block
+                    dir('weather_app') {
+                        sh 'docker build -t weather-app-v2 .'
+                    }
+                    echo "Successfully built the Docker image named weather-app-v2"
+                }
+            }
+        }
+        stage("run_container") {
+            steps {
+                script {
+                    sh 'docker run -d -p 5000:5000 --name myweather-app weather-app-v2:latest'
+                    echo "myweather-app is running on port 5000"
+                }
+            }
+        }
+        stage("login_dockerhub") {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhubcred', usernameVariable: 'dockerhubuser', passwordVariable: 'dockerhubpass')]) {
+                        sh "docker login -u ${dockerhubuser} -p ${dockerhubpass}"
+                        sh "docker tag weather-app-v2:latest ${dockerhubuser}/weather-app-v2:latest"
+                        sh "docker push ${dockerhubuser}/weather-app-v2:latest"
+                        echo "Successfully pushed weather-app-v2 into Docker Hub repo"
+                    }
+                }
+            }
+        }
+    }
+}
