@@ -7,7 +7,7 @@ metadata:
             app: weather-app
 
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
       app: weather-app
@@ -18,6 +18,11 @@ spec:
     spec:
       containers:
         - name: weather-app 
-          image: jawaid365/weather-app
+          image: jawaid365/weather-app-v2
           ports:
             - containerPort: 5000
+          resources:
+            requests:
+              cpu: "100m"
+            limits:
+              cpu: "200m"
