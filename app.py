@@ -10,10 +10,10 @@ import bugsnag
 from bugsnag.flask import handle_exceptions
 
 # Datadog Init
-initialize(api_key=os.getenv("DATADOG_API_KEY"))
+initialize(api_key=os.getenv("e2530648fc8da01f715fab430d530a25"))
 
 # Bugsnag Init
-bugsnag.configure(api_key=os.getenv("BUGSNAG_API_KEY"), project_root=".")
+bugsnag.configure(api_key=os.getenv("f5047dec7c00e161eed20cbb2eb9da0a"), project_root=".")
 app = Flask(__name__)
 handle_exceptions(app)
 
