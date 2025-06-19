@@ -67,4 +67,4 @@ jobs:
         run: |
           kubectl get pods -n weather-app
           kubectl get svc -n weather-app
-          kubectl port-forward svc/weather-app-service -n weather-app --8080:81 --address=0.0.0.0 &
+          kubectl port-forward svc/weather-app-service -n weather-app 8080:81 --address=0.0.0.0 &
