@@ -5,38 +5,65 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: 🔐 Docker Login
+      - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: 🐳 Build & Push Docker Image
+      - name: Build Docker Image
         run: |
           docker build -t weather-app .
           docker tag weather-app:latest ${{ secrets.DOCKER_USERNAME }}/weather-app:latest
+
+  push:
+    name: Push to Docker Hub
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Tag & Push Image
+        run: |
+          docker tag weather-app:latest ${{ secrets.DOCKER_USERNAME }}/weather-app:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/weather-app:latest
 
-      - name: 🔧 Configure AWS Credentials
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    needs: push
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: ☸️ Update kubeconfig for EKS
+      - name: Update kubeconfig for EKS
         run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - name: 🚀 Deploy to EKS
+      - name: Deploy to EKS
         run: |
           kubectl apply -f deployment.yml
           kubectl apply -f service.yml
 
-      - name: 📋 Check Deployment Status
+      - name: Check Deployment Status
         run: |
-          kubectl get pods
-          kubectl get svc
+          kubectl get pods -n weather-app
+          kubectl get svc -n weather-app
+          kubectl port-forward svc/weather-app-service -n weather-app --8080:81 --address=0.0.0.0 &
