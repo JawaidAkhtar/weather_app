@@ -9,15 +9,19 @@ from datadog import initialize, api
 import bugsnag
 from bugsnag.flask import handle_exceptions
 
-# Initialize Datadog using environment variable
-initialize(api_key=os.getenv("DATADOG_API_KEY"))
+# Initialize Datadog
+api_key = os.getenv("DATADOG_API_KEY")
+print("Datadog API Key:", api_key)
 
-# Send a custom Datadog event on app start
-api.Event.create(
-    title="Weather App Deployment",
-    text="✅ The weather app was deployed and started successfully on EKS.",
+initialize(api_key=api_key)
+
+# Send test event
+response = api.Event.create(
+    title="✅ Weather App Started",
+    text="App has started and tried sending this Datadog event.",
     alert_type="success"
 )
+print("📡 Datadog Event Response:", response)
 
 # Configure Bugsnag
 bugsnag.configure(
