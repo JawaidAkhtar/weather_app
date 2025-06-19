@@ -33,8 +33,8 @@ jobs:
 
       - name: 🚀 Deploy to EKS
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f deployment.yml
+          kubectl apply -f service.yml
 
       - name: 📋 Check Deployment Status
         run: |
