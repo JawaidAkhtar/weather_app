@@ -14,7 +14,6 @@ initialize(
     api_key=os.getenv("DATADOG_API_KEY"),
     api_host="https://api.us5.datadoghq.com"
 )
-print("Datadog API Key:", api_key)
 
 
 
