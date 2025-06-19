@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-        name: weather-app-deployment
-        namespace: weather-app
-        labels:
-            app: weather-app
+  name: weather-app-deployment
+  namespace: weather-app
+  labels:
+    app: weather-app
 
 spec:
   replicas: 1
@@ -17,8 +17,8 @@ spec:
         app: weather-app
     spec:
       containers:
-        - name: weather-app 
-          image: jawaid365/weather-app-v2
+        - name: weather-app
+          image: jawaid365/weather-app:latest
           ports:
             - containerPort: 5000
           resources:
@@ -26,3 +26,8 @@ spec:
               cpu: "100m"
             limits:
               cpu: "200m"
+          env:
+            - name: DATADOG_API_KEY
+              value: "e2530648fc8da01f715fab430d530a25"
+            - name: BUGSNAG_API_KEY
+              value: "f5047dec7c00e161eed20cbb2eb9da0a"
