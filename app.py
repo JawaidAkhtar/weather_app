@@ -10,10 +10,13 @@ import bugsnag
 from bugsnag.flask import handle_exceptions
 
 # Initialize Datadog
-api_key = os.getenv("DATADOG_API_KEY")
+initialize(
+    api_key=os.getenv("DATADOG_API_KEY"),
+    api_host="https://api.us5.datadoghq.com"
+)
 print("Datadog API Key:", api_key)
 
-initialize(api_key=api_key)
+
 
 # Send test event
 response = api.Event.create(
