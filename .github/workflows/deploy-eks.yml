@@ -35,6 +35,7 @@ jobs:
 
       - name: Tag & Push Image
         run: |
+          docker build -t weather-app .
           docker tag weather-app:latest ${{ secrets.DOCKER_USERNAME }}/weather-app:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/weather-app:latest
 
